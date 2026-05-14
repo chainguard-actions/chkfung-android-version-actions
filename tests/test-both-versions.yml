@@ -1,0 +1,47 @@
+name: Test versionCode and versionName update together
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Copy fixture gradle file to workspace
+        run: |
+          mkdir -p app
+          cp $GITHUB_WORKSPACE/actions/hardened/chkfung--android-version-actions/v1.2.3/tests/fixtures/app/build.gradle app/build.gradle
+
+      - id: action
+        uses: .
+        with:
+          gradlePath: app/build.gradle
+          versionCode: "100"
+          versionName: "3.0.0"
+
+      - name: Assert result output
+        env:
+          ACTUAL: ${{ steps.action.outputs.result }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "Done" ]; then
+            echo "FAIL: expected 'Done', got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: result output is 'Done'"
+
+      - name: Assert both version fields were updated
+        run: |
+          echo "--- gradle file contents ---"
+          cat app/build.gradle
+          echo "---"
+          if ! grep -q "versionCode 100" app/build.gradle; then
+            echo "FAIL: versionCode 100 not found in build.gradle"
+            exit 1
+          fi
+          echo "PASS: versionCode updated to 100"
+          if ! grep -q 'versionName "3.0.0"' app/build.gradle; then
+            echo "FAIL: versionName '3.0.0' not found in build.gradle"
+            exit 1
+          fi
+          echo "PASS: versionName updated to '3.0.0'"
