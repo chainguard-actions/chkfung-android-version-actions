@@ -8,7 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v1.2.3 | [`v1.2.3`](https://github.com/chainguard-actions/chkfung--android-version-actions/tree/v1.2.3) | — |
+| v1.2.3 | [`v1.2.3`](https://github.com/chainguard-actions/chkfung-android-version-actions/tree/v1.2.3) | — |
 
 ## Privacy
 
