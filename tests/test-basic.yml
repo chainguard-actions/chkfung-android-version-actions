@@ -1,0 +1,29 @@
+name: Test basic usage (gradlePath only)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Copy fixture build.gradle to workspace
+        run: |
+          mkdir -p app
+          cp actions/hardened/chkfung--android-version-actions/v1.1/tests/fixtures/build.gradle app/build.gradle
+
+      - id: action
+        uses: .
+        with:
+          gradlePath: app/build.gradle
+
+      - name: Assert result output is Done
+        env:
+          ACTUAL: ${{ steps.action.outputs.result }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "Done" ]; then
+            echo "FAIL: expected 'Done' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS"
