@@ -1,0 +1,47 @@
+name: Test basic usage with default gradlePath
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Prepare default gradle path
+        run: |
+          mkdir -p app
+          cp $GITHUB_WORKSPACE/actions/hardened/chkfung--android-version-actions/v1.2.3/tests/fixtures/app/build.gradle app/build.gradle
+          echo "Initial build.gradle:"
+          cat app/build.gradle
+
+      - id: action
+        uses: .
+        with:
+          gradlePath: app/build.gradle
+          versionCode: "10"
+          versionName: "1.1.0"
+
+      - name: Assert result output is set
+        env:
+          RESULT: ${{ steps.action.outputs.result }}
+        run: |
+          echo "result: $RESULT"
+          if [ -z "$RESULT" ]; then
+            echo "FAIL: expected result output to be non-empty"
+            exit 1
+          fi
+          echo "PASS: result output is set"
+
+      - name: Assert versionCode and versionName were updated
+        run: |
+          echo "Updated build.gradle:"
+          cat app/build.gradle
+          if ! grep -q "versionCode 10" app/build.gradle; then
+            echo "FAIL: expected versionCode 10 in build.gradle"
+            exit 1
+          fi
+          if ! grep -q 'versionName "1.1.0"' app/build.gradle; then
+            echo "FAIL: expected versionName \"1.1.0\" in build.gradle"
+            exit 1
+          fi
+          echo "PASS: versionCode and versionName updated correctly"

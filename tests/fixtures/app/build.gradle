@@ -1,5 +1,4 @@
 android {
-    compileSdkVersion 33
     defaultConfig {
         applicationId "com.example.app"
         minSdkVersion 21
