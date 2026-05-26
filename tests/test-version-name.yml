@@ -1,0 +1,60 @@
+name: Test versionName input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Prepare build.gradle fixture
+        run: |
+          mkdir -p /tmp/test-app
+          cat > /tmp/test-app/build.gradle <<'EOF'
+          android {
+              defaultConfig {
+                  applicationId "com.example.app"
+                  versionCode 1
+                  versionName "1.0.0"
+              }
+          }
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          gradlePath: /tmp/test-app/build.gradle
+          versionName: "2.5.0"
+
+      - name: Assert result output
+        env:
+          ACTUAL: ${{ steps.action.outputs.result }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "Done" ]; then
+            echo "FAIL: expected 'Done' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: result output is 'Done'"
+
+      - name: Assert versionName was updated
+        run: |
+          content=$(cat /tmp/test-app/build.gradle)
+          echo "File content:"
+          echo "$content"
+          if echo "$content" | grep -q 'versionName "2.5.0"'; then
+            echo "PASS: versionName updated to 2.5.0"
+          else
+            echo "FAIL: versionName was not updated to 2.5.0"
+            exit 1
+          fi
+
+      - name: Assert versionCode was not changed
+        run: |
+          content=$(cat /tmp/test-app/build.gradle)
+          if echo "$content" | grep -qE 'versionCode\s*1'; then
+            echo "PASS: versionCode unchanged"
+          else
+            echo "FAIL: versionCode was unexpectedly changed"
+            exit 1
+          fi
