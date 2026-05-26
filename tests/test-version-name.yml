@@ -1,0 +1,41 @@
+name: Test versionName input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Prepare writable gradle file
+        run: |
+          mkdir -p /tmp/test-app
+          cp "$GITHUB_WORKSPACE/actions/hardened/chkfung--android-version-actions/v1.2.2/tests/fixtures/app/build.gradle" /tmp/test-app/build.gradle
+
+      - id: action
+        uses: .
+        with:
+          gradlePath: /tmp/test-app/build.gradle
+          versionName: "2.5.1"
+
+      - name: Assert result output
+        env:
+          ACTUAL: ${{ steps.action.outputs.result }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "Done" ]; then
+            echo "FAIL: expected 'Done' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: result output is 'Done'"
+
+      - name: Assert versionName was updated in gradle file
+        run: |
+          CONTENT=$(cat /tmp/test-app/build.gradle)
+          echo "gradle content:"
+          echo "$CONTENT"
+          if ! echo "$CONTENT" | grep -q 'versionName "2.5.1"'; then
+            echo "FAIL: expected versionName \"2.5.1\" in gradle file"
+            exit 1
+          fi
+          echo "PASS: versionName updated correctly"
