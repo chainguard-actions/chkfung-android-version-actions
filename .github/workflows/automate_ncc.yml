@@ -1,0 +1,32 @@
+name: Build with ncc 
+
+on: 
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build with ncc
+      run: npx @vercel/ncc build index.js -o dist
+
+    - name: Create new branch and commit changes
+      id: create_branch
+      run: |
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Action"
+        BRANCH_NAME=automated-build-$(date +'%Y%m%d%H%M%S')
+        git checkout -b $BRANCH_NAME
+        git add dist/index.js
+        git commit -m "Automated build"
+        git push origin $BRANCH_NAME
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV

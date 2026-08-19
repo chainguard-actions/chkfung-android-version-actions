@@ -1,4 +1,4 @@
-name: Test basic usage - update versionCode and versionName
+name: Test version code only update
 on:
   workflow_dispatch:
 jobs:
@@ -9,11 +9,11 @@ jobs:
 
       - name: Create a fake build.gradle
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/app"
-          cat > "$GITHUB_WORKSPACE/tests/fixtures/app/build.gradle" <<'EOF'
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/app-code-only"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/app-code-only/build.gradle" <<'EOF'
           android {
               defaultConfig {
-                  versionCode 1
+                  versionCode 5
                   versionName "1.0.0"
               }
           }
@@ -22,9 +22,8 @@ jobs:
       - id: action
         uses: .
         with:
-          gradlePath: tests/fixtures/app/build.gradle
-          versionCode: "42"
-          versionName: "2.0.0"
+          gradlePath: tests/fixtures/app-code-only/build.gradle
+          versionCode: "99"
 
       - name: Assert result output is Done
         env:
@@ -39,20 +38,20 @@ jobs:
 
       - name: Assert versionCode was updated
         run: |
-          CONTENT=$(cat "$GITHUB_WORKSPACE/tests/fixtures/app/build.gradle")
+          CONTENT=$(cat "$GITHUB_WORKSPACE/tests/fixtures/app-code-only/build.gradle")
           echo "gradle content:"
           echo "$CONTENT"
-          if ! echo "$CONTENT" | grep -qE 'versionCode[[:space:]=]*42'; then
-            echo "FAIL: versionCode was not updated to 42"
+          if ! echo "$CONTENT" | grep -qE 'versionCode[[:space:]=]*99'; then
+            echo "FAIL: versionCode was not updated to 99"
             exit 1
           fi
-          echo "PASS: versionCode updated"
+          echo "PASS: versionCode updated to 99"
 
-      - name: Assert versionName was updated
+      - name: Assert versionName was NOT changed
         run: |
-          CONTENT=$(cat "$GITHUB_WORKSPACE/tests/fixtures/app/build.gradle")
-          if ! echo "$CONTENT" | grep -qE 'versionName[[:space:]=]*"2\.0\.0"'; then
-            echo "FAIL: versionName was not updated to 2.0.0"
+          CONTENT=$(cat "$GITHUB_WORKSPACE/tests/fixtures/app-code-only/build.gradle")
+          if ! echo "$CONTENT" | grep -qE 'versionName[[:space:]=]*"1\.0\.0"'; then
+            echo "FAIL: versionName should remain '1.0.0'"
             exit 1
           fi
-          echo "PASS: versionName updated"
+          echo "PASS: versionName unchanged"
