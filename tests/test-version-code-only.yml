@@ -1,0 +1,50 @@
+name: Test update versionCode only
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Prepare build.gradle fixture
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/app"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/app/build.gradle" "$GITHUB_WORKSPACE/app/build.gradle"
+
+      - id: action
+        uses: .
+        with:
+          gradlePath: app/build.gradle
+          versionCode: "99"
+
+      - name: Assert result output
+        env:
+          RESULT: ${{ steps.action.outputs.result }}
+        run: |
+          echo "result: $RESULT"
+          if [ "$RESULT" != "Done" ]; then
+            echo "FAIL: expected output 'Done', got '$RESULT'"
+            exit 1
+          fi
+          echo "PASS: result output is 'Done'"
+
+      - name: Assert versionCode was updated
+        run: |
+          CONTENT=$(cat "$GITHUB_WORKSPACE/app/build.gradle")
+          echo "build.gradle content:"
+          echo "$CONTENT"
+          if ! echo "$CONTENT" | grep -qE 'versionCode\s*99'; then
+            echo "FAIL: versionCode was not updated to 99"
+            exit 1
+          fi
+          echo "PASS: versionCode updated to 99"
+
+      - name: Assert versionName was NOT changed
+        run: |
+          CONTENT=$(cat "$GITHUB_WORKSPACE/app/build.gradle")
+          if ! echo "$CONTENT" | grep -qE 'versionName\s*"1\.0\.0"'; then
+            echo "FAIL: versionName should remain '1.0.0' but was changed"
+            exit 1
+          fi
+          echo "PASS: versionName unchanged at 1.0.0"

@@ -1,4 +1,4 @@
-name: Test basic usage - update both versionCode and versionName
+name: Test basic usage - update versionCode and versionName
 on:
   workflow_dispatch:
 jobs:
@@ -9,55 +9,43 @@ jobs:
 
       - name: Prepare build.gradle fixture
         run: |
-          mkdir -p /tmp/test-app
-          cat > /tmp/test-app/build.gradle <<'EOF'
-          android {
-              defaultConfig {
-                  applicationId "com.example.app"
-                  minSdkVersion 21
-                  targetSdkVersion 33
-                  versionCode 1
-                  versionName "1.0.0"
-              }
-          }
-          EOF
+          mkdir -p "$GITHUB_WORKSPACE/app"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/app/build.gradle" "$GITHUB_WORKSPACE/app/build.gradle"
 
       - id: action
         uses: .
         with:
-          gradlePath: /tmp/test-app/build.gradle
-          versionCode: "100"
-          versionName: "3.0.0"
+          gradlePath: app/build.gradle
+          versionCode: "42"
+          versionName: "2.0.0"
 
-      - name: Assert result output is Done
+      - name: Assert result output
         env:
-          ACTUAL: ${{ steps.action.outputs.result }}
+          RESULT: ${{ steps.action.outputs.result }}
         run: |
-          echo "actual: $ACTUAL"
-          if [ "$ACTUAL" != "Done" ]; then
-            echo "FAIL: expected 'Done' but got '$ACTUAL'"
+          echo "result: $RESULT"
+          if [ "$RESULT" != "Done" ]; then
+            echo "FAIL: expected output 'Done', got '$RESULT'"
             exit 1
           fi
           echo "PASS: result output is 'Done'"
 
-      - name: Assert versionCode was updated to 100
+      - name: Assert versionCode was updated
         run: |
-          content=$(cat /tmp/test-app/build.gradle)
-          echo "File content:"
-          echo "$content"
-          if echo "$content" | grep -qE 'versionCode\s*100'; then
-            echo "PASS: versionCode updated to 100"
-          else
-            echo "FAIL: versionCode was not updated to 100"
+          CONTENT=$(cat "$GITHUB_WORKSPACE/app/build.gradle")
+          echo "build.gradle content:"
+          echo "$CONTENT"
+          if ! echo "$CONTENT" | grep -qE 'versionCode\s*42'; then
+            echo "FAIL: versionCode was not updated to 42"
             exit 1
           fi
+          echo "PASS: versionCode updated to 42"
 
-      - name: Assert versionName was updated to 3.0.0
+      - name: Assert versionName was updated
         run: |
-          content=$(cat /tmp/test-app/build.gradle)
-          if echo "$content" | grep -q 'versionName "3.0.0"'; then
-            echo "PASS: versionName updated to 3.0.0"
-          else
-            echo "FAIL: versionName was not updated to 3.0.0"
+          CONTENT=$(cat "$GITHUB_WORKSPACE/app/build.gradle")
+          if ! echo "$CONTENT" | grep -qE 'versionName\s*"2\.0\.0"'; then
+            echo "FAIL: versionName was not updated to 2.0.0"
             exit 1
           fi
+          echo "PASS: versionName updated to 2.0.0"
