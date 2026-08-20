@@ -1,0 +1,58 @@
+name: Test basic usage - update versionCode and versionName
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a sample build.gradle
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/app"
+          cat > "$GITHUB_WORKSPACE/app/build.gradle" <<'EOF'
+          android {
+              defaultConfig {
+                  versionCode 1
+                  versionName "1.0.0"
+              }
+          }
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          gradlePath: app/build.gradle
+          versionCode: "42"
+          versionName: "2.0.0"
+
+      - name: Assert result output is Done
+        env:
+          RESULT: ${{ steps.action.outputs.result }}
+        run: |
+          echo "result: $RESULT"
+          if [ "$RESULT" != "Done" ]; then
+            echo "FAIL: expected 'Done' but got '$RESULT'"
+            exit 1
+          fi
+          echo "PASS: result is 'Done'"
+
+      - name: Assert versionCode was updated
+        run: |
+          CONTENT=$(cat "$GITHUB_WORKSPACE/app/build.gradle")
+          echo "gradle content:"
+          echo "$CONTENT"
+          if ! echo "$CONTENT" | grep -qE 'versionCode\s*42'; then
+            echo "FAIL: versionCode was not updated to 42"
+            exit 1
+          fi
+          echo "PASS: versionCode updated correctly"
+
+      - name: Assert versionName was updated
+        run: |
+          CONTENT=$(cat "$GITHUB_WORKSPACE/app/build.gradle")
+          if ! echo "$CONTENT" | grep -qE 'versionName\s*"2\.0\.0"'; then
+            echo "FAIL: versionName was not updated to 2.0.0"
+            exit 1
+          fi
+          echo "PASS: versionName updated correctly"
