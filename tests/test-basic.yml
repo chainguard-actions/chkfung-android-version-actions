@@ -1,4 +1,4 @@
-name: Test basic usage (gradlePath only)
+name: Test basic usage - update versionCode and versionName
 on:
   workflow_dispatch:
 jobs:
@@ -7,23 +7,45 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Copy fixture build.gradle to workspace
+      - name: Prepare build.gradle fixture
         run: |
-          mkdir -p app
-          cp actions/hardened/chkfung--android-version-actions/v1.1/tests/fixtures/build.gradle app/build.gradle
+          mkdir -p /tmp/android-test
+          cp "$GITHUB_WORKSPACE/tests/fixtures/build.gradle" /tmp/android-test/build.gradle
 
       - id: action
         uses: .
         with:
-          gradlePath: app/build.gradle
+          gradlePath: /tmp/android-test/build.gradle
+          versionCode: "42"
+          versionName: "2.5.0"
 
       - name: Assert result output is Done
         env:
-          ACTUAL: ${{ steps.action.outputs.result }}
+          RESULT: ${{ steps.action.outputs.result }}
         run: |
-          echo "actual: $ACTUAL"
-          if [ "$ACTUAL" != "Done" ]; then
-            echo "FAIL: expected 'Done' but got '$ACTUAL'"
+          echo "result: $RESULT"
+          if [ "$RESULT" != "Done" ]; then
+            echo "FAIL: expected 'Done' but got '$RESULT'"
             exit 1
           fi
-          echo "PASS"
+          echo "PASS: result is 'Done'"
+
+      - name: Assert versionCode was updated
+        run: |
+          CONTENT=$(cat /tmp/android-test/build.gradle)
+          echo "build.gradle content:"
+          echo "$CONTENT"
+          if ! echo "$CONTENT" | grep -qE 'versionCode\s*42'; then
+            echo "FAIL: versionCode 42 not found in build.gradle"
+            exit 1
+          fi
+          echo "PASS: versionCode updated to 42"
+
+      - name: Assert versionName was updated
+        run: |
+          CONTENT=$(cat /tmp/android-test/build.gradle)
+          if ! echo "$CONTENT" | grep -qE 'versionName\s*"2\.5\.0"'; then
+            echo "FAIL: versionName 2.5.0 not found in build.gradle"
+            exit 1
+          fi
+          echo "PASS: versionName updated to 2.5.0"

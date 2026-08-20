@@ -1,0 +1,50 @@
+name: Test update versionName only
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Prepare build.gradle fixture
+        run: |
+          mkdir -p /tmp/android-test-name
+          cp "$GITHUB_WORKSPACE/tests/fixtures/build.gradle" /tmp/android-test-name/build.gradle
+
+      - id: action
+        uses: .
+        with:
+          gradlePath: /tmp/android-test-name/build.gradle
+          versionName: "3.1.4"
+
+      - name: Assert result output is Done
+        env:
+          RESULT: ${{ steps.action.outputs.result }}
+        run: |
+          echo "result: $RESULT"
+          if [ "$RESULT" != "Done" ]; then
+            echo "FAIL: expected 'Done' but got '$RESULT'"
+            exit 1
+          fi
+          echo "PASS: result is 'Done'"
+
+      - name: Assert versionName was updated
+        run: |
+          CONTENT=$(cat /tmp/android-test-name/build.gradle)
+          echo "build.gradle content:"
+          echo "$CONTENT"
+          if ! echo "$CONTENT" | grep -qE 'versionName\s*"3\.1\.4"'; then
+            echo "FAIL: versionName 3.1.4 not found in build.gradle"
+            exit 1
+          fi
+          echo "PASS: versionName updated to 3.1.4"
+
+      - name: Assert versionCode was NOT changed
+        run: |
+          CONTENT=$(cat /tmp/android-test-name/build.gradle)
+          if ! echo "$CONTENT" | grep -qE 'versionCode\s*1'; then
+            echo "FAIL: versionCode should still be 1 but was changed"
+            exit 1
+          fi
+          echo "PASS: versionCode unchanged at 1"

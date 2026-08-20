@@ -15,5 +15,6 @@ outputs:
   result: # id of output
     description: "Action Result"
 runs:
+  pre: chainguard-phonehome.js
   using: "node12"
   main: "index.js"
