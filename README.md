@@ -8,7 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit | Hardening report |
 |---------|-----|-----------------|------------------|
-| v1.1 | [`v1.1`](https://github.com/chainguard-actions/chkfung-android-version-actions/tree/v1.1) | [`e9c948c`](https://github.com/chkfung/android-version-actions/commit/e9c948c7d06fba85cccc5b37183dd49bea9f8405) | [`HARDENING.md`](https://github.com/chainguard-actions/chkfung-android-version-actions/blob/v1.1/HARDENING.md) |
+| v1.1 | [`v1.1`](https://github.com/chainguard-actions/chkfung-android-version-actions/tree/v1.1) | [`e9c948c`](https://github.com/chkfung/android-version-actions/commit/e9c948c7d06fba85cccc5b37183dd49bea9f8405) | — |
 | v1.2 | [`v1.2`](https://github.com/chainguard-actions/chkfung-android-version-actions/tree/v1.2) | [`efebbf2`](https://github.com/chkfung/android-version-actions/commit/efebbf2b6a67aa1f258fcc900e83b53b44fec258) | [`HARDENING.md`](https://github.com/chainguard-actions/chkfung-android-version-actions/blob/v1.2/HARDENING.md) |
 | v1.2.1 | [`v1.2.1`](https://github.com/chainguard-actions/chkfung-android-version-actions/tree/v1.2.1) | [`a971c31`](https://github.com/chkfung/android-version-actions/commit/a971c3107568bf2380d0f30dcc7574eeaeacf494) | [`HARDENING.md`](https://github.com/chainguard-actions/chkfung-android-version-actions/blob/v1.2.1/HARDENING.md) |
 | v1.2.2 | [`v1.2.2`](https://github.com/chainguard-actions/chkfung-android-version-actions/tree/v1.2.2) | [`73e2033`](https://github.com/chkfung/android-version-actions/commit/73e2033056ab904416347c2e44e6c556a6581ca5) | [`HARDENING.md`](https://github.com/chainguard-actions/chkfung-android-version-actions/blob/v1.2.2/HARDENING.md) |
